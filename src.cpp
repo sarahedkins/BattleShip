@@ -14,10 +14,14 @@ const int NUMSHIPS = 5;
 
 // prototypes
 void getNewGuess(int&, int&);
-string whichShip(int x, int y, char array1[][COL], Ship list1[NUMSHIPS]);
-string hitMiss(char char1);
+Ship whichShip(int x, int y, char array1[][COL], Ship list1[NUMSHIPS]);
 void checkAlreadyTried(bool& alreadyTried, int x, int y, int array1[][COL]);
-void printHitMiss(string name);
+void printHitStatement(string name);
+void printMissStatement();
+void printSankStatement(Ship myShip);
+bool checkForShips(int num1);
+void printWinningStatement(int);
+
 
 // main
 int main() {
@@ -28,6 +32,7 @@ int main() {
 	int guesses[ROW][COL];
 	bool gameOver = false;
 	bool alreadyTried = false;
+	bool sank = false;
 	string shipName;
 	char field[ROW][COL];
 	Ship aircraft(5, "an aircraft carrier", 'A');
@@ -36,6 +41,7 @@ int main() {
 	Ship patrolboat(2, "a patrol boat", 'P');
 	Ship shipList[NUMSHIPS] = { aircraft, battleship, submarine, destroyer,
 			patrolboat };
+	int numOfGuesses = 0, numOfSunkenShips = 0;
 
 // open file and check if it is open
 	infile.open("battleField.txt");
@@ -68,13 +74,35 @@ int main() {
 			continue;
 		}
 
-// determines what ship, if any, was hit
-		shipName = whichShip(coX, coY, field, shipList);
+		numOfGuesses++;
 
-// prints a hit/miss statement
-		printHitMiss(shipName);
+		if (field[coX][coY] != 'O') {
+// determines what ship, if any, was hit
+			// variable shipInfo stores current ship
+			Ship shipInfo = whichShip(coX, coY, field, shipList);
+
+// prints a hit statement
+			printHitStatement(shipInfo.getName());
+
+// check if ship sank with previous hit
+			sank = shipInfo.didShipSink();
+			if (sank)
+				{
+				numOfSunkenShips++;
+				printSankStatement(shipInfo);
+				}
+
+// check if there are still ships on the battlefield
+gameOver = checkForShips(numOfSunkenShips);
+
+// print a miss statement if no ship was hit
+		} else
+			printMissStatement();
 
 	} while (!gameOver);
+
+// print winning statement
+	printWinningStatement(numOfGuesses);
 
 	return 0;
 } // end main
@@ -88,15 +116,14 @@ void getNewGuess(int& coX, int& coY) {
 	coY = coY - 1;
 }
 
-string whichShip(int x, int y, char array1[][COL], Ship list1[NUMSHIPS]) {
+Ship whichShip(int x, int y, char array1[][COL], Ship list1[NUMSHIPS]) {
 	char obj_hit = array1[x][y];
-	string miss = "water";
 	for (int i = 0; i < NUMSHIPS; i++)
 		if (obj_hit == list1[i].getId()) {
 			list1[i].takeAHit();
-			return list1[i].getName();
+			return list1[i];
 		}
-	return miss;
+	return list1[0]; // should never hit this
 }
 
 void checkAlreadyTried(bool& alreadyTried, int x, int y, int array1[][COL]) {
@@ -108,9 +135,44 @@ void checkAlreadyTried(bool& alreadyTried, int x, int y, int array1[][COL]) {
 	}
 }
 
-void printHitMiss(string name) {
-	if (name != "water")
-		cout << "You hit " << name << "." << endl;
+bool checkForShips(int num1)
+{
+	bool youWin = false;
+	if (num1 == NUMSHIPS)
+		youWin = true;
+	return youWin;
+}
+
+// print statements
+void printHitStatement(string name) {
+	cout << "You hit " << name << "." << endl;
+}
+
+void printMissStatement() {
+	cout << "Miss." << endl;
+}
+
+void printSankStatement(Ship myShip) {
+	cout << "You sunk " << myShip.getName() << "!" << endl;
+}
+
+void printWinningStatement(int num1)
+{
+	cout << "Congratulations Comrade. You obliterated the sea!" << endl;
+	cout << "You completed this mission in " << num1 << " rounds." << endl;
+
+	if (num1 == 17)
+		cout << "A perfect score! Couldn't have done better. Way to go!";
+	else if (num1 > 17 && num1 <= 30)
+		cout << "You are a strong leader. You rank among the top.";
+	else if (num1 > 30 && num1 <=40)
+		cout << "You aren't bad for naval officer.";
+	else if (num1 > 40 && num1 <=60)
+		cout << "You need to sharpen your skills, mate.";
+	else if (num1 > 60 && num1 <=80)
+		cout << "Take this mop and start swabbing the decks.";
 	else
-		cout << "Miss." << endl;
+		cout << "Let's hope they don't release the Kraken while you're on duty.";
+
+	cout << endl;
 }
