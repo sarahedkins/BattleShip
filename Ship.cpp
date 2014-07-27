@@ -31,6 +31,11 @@ bool Ship::didShipSink ()
 	return sank;
 }
 
+int Ship::getShipStatus ()
+{
+	return this->shipStatus;
+}
+
 char Ship::getId()
 {
 	return this->id;

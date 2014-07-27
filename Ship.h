@@ -19,6 +19,7 @@ private:
 public:
 	void takeAHit();
 	bool didShipSink();
+	int getShipStatus();
 	char getId();
 	std::string getName();
 
